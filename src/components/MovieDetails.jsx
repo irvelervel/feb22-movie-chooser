@@ -14,6 +14,11 @@ import { Card } from 'react-bootstrap'
 // 7) but this component is ALWAYS receiving the value from the dropdown, that's located in this.props.movieTitle
 // 8) we should find a way for listening for UPDATES in this component, something like a prop change
 // 9) for achieving this we can use another lifecycle method: componentDidUpdate
+// 10) I can invoke getMovieDetails() also from componentDidUpdate, but because this lifecycle method
+// gets triggered on every props or state change, I'll enter an infinite loop because getMovieDetails() sets the state after the fetch :(
+// 11) so let's use the 2 arguments componentDidUpdate provides to the developer, prevProps and prevState
+// to track down the condition you want your component to listen to in order to repeat the fetch operation
+// in our case: a change in the movieTitle prop!
 
 class MovieDetails extends Component {
   //   constructor(props) {
@@ -70,6 +75,21 @@ class MovieDetails extends Component {
   //     console.log(this) // <-- this is undefined
   //     // because handleClick is NOT an arrow function!
   //   }
+
+  componentDidUpdate = (prevProps, prevState) => {
+    // this is another lifecycle method
+    // it will be automatically invoked by the component.
+    // when? whenever a new prop comes in or whenever the STATE changes
+    // this.getMovieDetails() // <-- still infinite loop
+    // remember: our goal is to re-trigger the fetch when the movieTitle props changes!
+    // and NOT re-trigger the fetch when we set the state
+    // the two arguments allow us to PINPOINT the condition for re-executing the fetch!
+    // tldr: every componentDidUpdate usage MUST come with a condition
+    if (prevProps.movieTitle !== this.props.movieTitle) {
+      this.getMovieDetails()
+    }
+    // without a condition --> 99% infinite loop :(
+  }
 
   render() {
     console.log('render console log')
